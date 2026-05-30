@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "name": "Oryn",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "tailwindCSS.includeLanguages": {
+      "typescript": "javascript",
+      "typescriptreact": "javascript"
+    },
+    "files.exclude": {
+      "node_modules": true,
+      ".next": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "prisma.prisma",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  }
+}

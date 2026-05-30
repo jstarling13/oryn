@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgPlan {
+  CORE
+  PRO
+}
+
+enum OrgStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum VendorCategory {
+  FOOD_BEVERAGE
+  CLEANING
+  LINEN_LAUNDRY
+  POS_SOFTWARE
+  DELIVERY_PLATFORM
+  INSURANCE
+  UTILITIES
+  SHIPPING_PACKAGING
+  EQUIPMENT_RENTAL
+  OTHER
+}
+
+enum BenchmarkClassification {
+  FAIR
+  ELEVATED
+  OVERPRICED
+  UNKNOWN
+  BENCHMARKING
+}
+
+enum BenchmarkConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum NegotiationStatus {
+  DRAFTED
+  SENT
+  RESPONDED
+  WON
+  NO_RESPONSE
+}
+
+model Organization {
+  id               String    @id @default(cuid())
+  clerkUserId      String    @unique
+  name             String
+  type             String
+  city             String
+  monthlyRevenue   String
+  ownerEmail       String?
+  ownerName        String?
+  plan             OrgPlan   @default(CORE)
+  stripeCustomerId String?
+  stripeSubId      String?
+  trialEndsAt      DateTime?
+  status           OrgStatus @default(TRIAL)
+  onboardingDone   Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  vendors           Vendor[]
+  vendorBenchmarks  VendorBenchmark[]
+  negotiationDrafts NegotiationDraft[]
+  contractAlerts    ContractAlert[]
+}
+
+model Vendor {
+  id              String         @id @default(cuid())
+  orgId           String
+  name            String
+  category        VendorCategory
+  monthlyAmount   Float
+  contactEmail    String?
+  contactName     String?
+  contractEndDate DateTime?
+  notes           String?
+  addedAt         DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  org              Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  benchmarks       VendorBenchmark[]
+  negotiations     NegotiationDraft[]
+  contractAlerts   ContractAlert[]
+
+  @@index([orgId])
+}
+
+model VendorBenchmark {
+  id                 String                  @id @default(cuid())
+  vendorId           String
+  orgId              String
+  marketRateLow      Float?
+  marketRateHigh     Float?
+  marketRateTypical  Float?
+  confidence         BenchmarkConfidence?
+  sourcesSummary     String?
+  classification     BenchmarkClassification @default(BENCHMARKING)
+  rawResearch        String?
+  benchmarkedAt      DateTime                @default(now())
+
+  vendor Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([orgId])
+}
+
+model NegotiationDraft {
+  id          String            @id @default(cuid())
+  vendorId    String
+  orgId       String
+  emailBody   String
+  status      NegotiationStatus @default(DRAFTED)
+  createdAt   DateTime          @default(now())
+  sentAt      DateTime?
+  outcome     String?
+  savedAmount Float?
+
+  vendor Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([orgId])
+}
+
+model ContractAlert {
+  id               String   @id @default(cuid())
+  vendorId         String
+  orgId            String
+  alertSentAt      DateTime @default(now())
+  daysUntilRenewal Int
+
+  vendor Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([orgId])
+}
