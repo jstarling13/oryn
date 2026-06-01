@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
   const { orgId } = await req.json();
   if (!orgId) return NextResponse.json({ error: "orgId required" }, { status: 400 });
 
-  try {
-    const result = await runBenchmarksForOrg(orgId);
-    return NextResponse.json({ success: true, ...result });
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
-  }
+  // Fire-and-forget — benchmark runs take minutes per org and would timeout
+  runBenchmarksForOrg(orgId).catch((err) =>
+    console.error(`Admin benchmark failed for org ${orgId}:`, err)
+  );
+
+  return NextResponse.json({ queued: true, orgId });
 }
