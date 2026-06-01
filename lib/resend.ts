@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Gracefully degrade if RESEND_API_KEY is not set (dev / test environments)
+export const resend = new Resend(process.env.RESEND_API_KEY ?? "re_missing_key");
 
 export const FROM_EMAIL = "Oryn <notifications@oryn.ai>";
 
