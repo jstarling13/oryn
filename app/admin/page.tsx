@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { AdminTriggerButton } from "./AdminTriggerButton";
 
 async function getAdminData() {
   const orgs = await prisma.organization.findMany({
@@ -164,27 +165,3 @@ function activeOrgs(orgs: { status: string }[]) {
   return orgs.filter((o) => o.status === "ACTIVE" || o.status === "TRIAL").length;
 }
 
-function AdminTriggerButton({ orgId }: { orgId: string }) {
-  return (
-    <form
-      action={`/api/admin/benchmarks`}
-      method="POST"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        await fetch("/api/admin/benchmarks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orgId }),
-        });
-        alert("Benchmarks triggered for org.");
-      }}
-    >
-      <button
-        type="submit"
-        className="text-xs text-amber-600 hover:text-amber-700 font-medium border border-amber-200 px-2.5 py-1 rounded-lg hover:bg-amber-50 transition-colors"
-      >
-        Re-run benchmarks
-      </button>
-    </form>
-  );
-}
