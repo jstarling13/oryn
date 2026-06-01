@@ -54,6 +54,19 @@ export async function runBenchmarkForVendor(
   }
 }
 
+/** Keep only the last N benchmark records per vendor to prevent unbounded growth. */
+async function pruneOldBenchmarks(vendorId: string, keep = 5) {
+  const all = await prisma.vendorBenchmark.findMany({
+    where: { vendorId },
+    orderBy: { benchmarkedAt: "desc" },
+    select: { id: true },
+  });
+  if (all.length > keep) {
+    const toDelete = all.slice(keep).map((b) => b.id);
+    await prisma.vendorBenchmark.deleteMany({ where: { id: { in: toDelete } } });
+  }
+}
+
 export async function runBenchmarksForOrg(orgId: string) {
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
@@ -68,6 +81,8 @@ export async function runBenchmarksForOrg(orgId: string) {
     try {
       const benchmark = await runBenchmarkForVendor(vendor, org);
       results.push({ vendor, benchmark, success: true });
+      // Prune stale records in background — don't let cleanup failures break the run
+      pruneOldBenchmarks(vendor.id).catch(() => {});
     } catch (err) {
       console.error(`Benchmark failed for vendor ${vendor.id}:`, err);
       results.push({ vendor, success: false, error: err });

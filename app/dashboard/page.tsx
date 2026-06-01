@@ -620,9 +620,9 @@ function CSVImportModal({ onClose, onImported }: { onClose: () => void; onImport
         {!result.length ? (
           <label className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center cursor-pointer hover:border-amber-400 transition-colors">
             <span className="text-4xl mb-3">📊</span>
-            <span className="text-sm font-medium text-gray-700">Upload CSV or Excel file</span>
-            <span className="text-xs text-gray-400 mt-1">Bank export, QuickBooks, or any transaction CSV</span>
-            <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleFile} disabled={loading} />
+            <span className="text-sm font-medium text-gray-700">Upload CSV file</span>
+            <span className="text-xs text-gray-400 mt-1">Bank export, QuickBooks, or any transaction CSV (.csv)</span>
+            <input type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={handleFile} disabled={loading} />
             {loading && <span className="text-sm text-amber-600 mt-3 animate-pulse">Analyzing transactions…</span>}
           </label>
         ) : (
