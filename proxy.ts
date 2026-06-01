@@ -10,8 +10,16 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isRootRoute = createRouteMatcher(["/"]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // Redirect signed-in users away from the marketing homepage
+  if (isRootRoute(req)) {
+    const { userId } = await auth();
+    if (userId) return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.next();
+  }
+
   if (isPublicRoute(req)) return NextResponse.next();
 
   const { userId } = await auth();
