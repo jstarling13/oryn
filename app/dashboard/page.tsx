@@ -503,7 +503,12 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
   };
 
   const markWon = async () => {
-    await patch({ status: "WON", outcome: "Price reduction secured", savedAmount: wonAmount ? parseFloat(wonAmount) : null });
+    const newMonthly = wonAmount ? parseFloat(wonAmount) : null;
+    // savedAmount = monthly savings = old rate − new rate
+    const savedAmount = (newMonthly !== null && vendor?.monthlyAmount)
+      ? Math.max(0, vendor.monthlyAmount - newMonthly)
+      : null;
+    await patch({ status: "WON", outcome: "Price reduction secured", savedAmount });
     onUpdate(); onClose();
   };
 
@@ -545,7 +550,10 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
           )}
           {showWonForm && (
             <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
-              <p className="text-sm font-bold text-green-800 mb-2">🎉 Record your win</p>
+              <p className="text-sm font-bold text-green-800 mb-1">🎉 Record your win</p>
+              {vendor?.monthlyAmount && (
+                <p className="text-xs text-green-700 mb-2">Old rate: {formatCurrency(vendor.monthlyAmount)}/mo — enter what you&apos;re paying now</p>
+              )}
               <div className="flex gap-3">
                 <div className="relative flex-1">
                   <span className="absolute left-3 top-2.5 text-gray-400 text-sm">$</span>
@@ -553,6 +561,11 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
                 </div>
                 <button onClick={markWon} className="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Save win</button>
               </div>
+              {wonAmount && vendor?.monthlyAmount && (
+                <p className="text-xs text-green-700 mt-2 font-medium">
+                  Monthly savings: {formatCurrency(Math.max(0, vendor.monthlyAmount - parseFloat(wonAmount || "0")))}/mo
+                </p>
+              )}
             </div>
           )}
         </div>
