@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { runBenchmarkForVendor } from "@/lib/agents/benchmark-agent";
+import { VendorCategory } from "@prisma/client";
+
+const VALID_CATEGORIES = new Set(Object.values(VendorCategory));
 
 export async function GET() {
   const { userId } = await auth();
@@ -43,8 +46,8 @@ export async function POST(req: NextRequest) {
   if (!name?.trim() || typeof name !== "string") {
     return NextResponse.json({ error: "Vendor name is required" }, { status: 400 });
   }
-  if (!category || typeof category !== "string") {
-    return NextResponse.json({ error: "Category is required" }, { status: 400 });
+  if (!category || !VALID_CATEGORIES.has(category as VendorCategory)) {
+    return NextResponse.json({ error: `Invalid category. Must be one of: ${[...VALID_CATEGORIES].join(", ")}` }, { status: 400 });
   }
   if (typeof monthlyAmount !== "number" || monthlyAmount <= 0 || !isFinite(monthlyAmount)) {
     return NextResponse.json({ error: "Monthly amount must be a positive number" }, { status: 400 });
@@ -56,8 +59,8 @@ export async function POST(req: NextRequest) {
   const vendor = await prisma.vendor.create({
     data: {
       orgId: org.id,
-      name,
-      category,
+      name: name.trim(),
+      category: category as VendorCategory,
       monthlyAmount,
       contractEndDate: contractEndDate ? new Date(contractEndDate) : null,
       notes: notes ?? null,
