@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { draftNegotiationEmail } from "@/lib/claude";
+import { createNegotiationDraft } from "@/lib/agents/negotiation-agent";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -12,37 +12,8 @@ export async function POST(req: NextRequest) {
 
   const { vendorId } = await req.json();
 
-  const vendor = await prisma.vendor.findFirst({
-    where: { id: vendorId, orgId: org.id },
-    include: {
-      benchmarks: { orderBy: { benchmarkedAt: "desc" }, take: 1 },
-    },
-  });
-  if (!vendor) return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
-
-  const benchmark = vendor.benchmarks[0] ?? null;
-
-  const emailBody = await draftNegotiationEmail(
-    vendor.name,
-    vendor.category,
-    org.name,
-    org.type,
-    vendor.monthlyAmount,
-    benchmark?.marketRateTypical ?? null,
-    benchmark?.marketRateLow ?? null,
-    benchmark?.marketRateHigh ?? null,
-    vendor.contractEndDate ? vendor.contractEndDate.toISOString().split("T")[0] : null,
-    vendor.notes
-  );
-
-  const draft = await prisma.negotiationDraft.create({
-    data: {
-      vendorId: vendor.id,
-      orgId: org.id,
-      emailBody,
-      status: "DRAFTED",
-    },
-  });
+  // createNegotiationDraft handles drafting + sends "draft ready" Resend notification
+  const draft = await createNegotiationDraft(vendorId, org.id);
 
   return NextResponse.json(draft, { status: 201 });
 }

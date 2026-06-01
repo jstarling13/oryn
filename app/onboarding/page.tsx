@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { VENDOR_CATEGORIES, BUSINESS_TYPES, MONTHLY_REVENUE_RANGES } from "@/lib/utils";
@@ -31,8 +31,19 @@ function makeVendor(): VendorInput {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [step, setStep] = useState(1);
+
+  // Redirect already-onboarded users straight to dashboard
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetch("/api/onboarding")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.onboardingDone) router.replace("/dashboard");
+      })
+      .catch(() => {});
+  }, [isLoaded, router]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
