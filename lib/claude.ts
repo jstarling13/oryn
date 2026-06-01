@@ -34,7 +34,10 @@ export async function runBenchmarkResearch(
         name: "web_search",
       } as unknown as Anthropic.Tool,
     ],
-    system: `You are a market research analyst helping small businesses understand fair vendor pricing.
+    system: [
+      {
+        type: "text",
+        text: `You are a market research analyst helping small businesses understand fair vendor pricing.
 Your job is to research current market rates for vendor services and provide actionable pricing benchmarks.
 Always base your findings on publicly available information. Be specific and cite your sources.
 When you have enough data, output a JSON object with this exact structure:
@@ -52,6 +55,9 @@ Classification rules (compare currentMonthlyAmount to marketRateTypical):
 - OVERPRICED: more than 25% above typical
 - UNKNOWN: insufficient data to determine
 Output ONLY the JSON at the end, after your research.`,
+        cache_control: { type: "ephemeral" },
+      },
+    ] as Anthropic.MessageParam["content"] & Anthropic.Messages.TextBlockParam[],
     messages: [
       {
         role: "user",
@@ -116,7 +122,10 @@ export async function draftNegotiationEmail(
   const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 600,
-    system: `You are a professional business negotiator writing on behalf of a small business owner.
+    system: [
+      {
+        type: "text",
+        text: `You are a professional business negotiator writing on behalf of a small business owner.
 Your goal is to write a polite, professional email requesting a pricing review from a vendor.
 Rules:
 - Sound like a real person, not a robot or AI assistant
@@ -128,6 +137,9 @@ Rules:
 - Never be aggressive or threatening
 - Do not mention AI, software, or that this email was drafted for you
 - Write in first person as the business owner`,
+        cache_control: { type: "ephemeral" },
+      },
+    ] as Anthropic.MessageParam["content"] & Anthropic.Messages.TextBlockParam[],
     messages: [
       {
         role: "user",
