@@ -14,7 +14,9 @@
     "postinstall": "prisma generate",
     "cron:benchmarks": "tsx scripts/run-benchmarks.ts",
     "cron:contracts": "tsx scripts/run-contract-alerts.ts",
-    "stripe:listen": "pwsh -File scripts/stripe-listen.ps1"
+    "stripe:listen": "pwsh -File scripts/stripe-listen.ps1",
+    "vercel:env": "pwsh -File scripts/vercel-env-push.ps1",
+    "vercel:env:prod": "pwsh -File scripts/vercel-env-push.ps1 -Production"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
