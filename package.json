@@ -14,7 +14,7 @@
     "postinstall": "prisma generate",
     "cron:benchmarks": "tsx scripts/run-benchmarks.ts",
     "cron:contracts": "tsx scripts/run-contract-alerts.ts",
-    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
+    "stripe:listen": "pwsh -File scripts/stripe-listen.ps1"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
