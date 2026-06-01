@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { runBenchmarksForOrg } from "@/lib/agents/benchmark-agent";
+import { runBenchmarkForVendor } from "@/lib/agents/benchmark-agent";
 
 export async function GET() {
   const { userId } = await auth();
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Trigger benchmark for new vendor
-  runBenchmarksForOrg(org.id).catch(console.error);
+  // Trigger benchmark for this vendor only (not the whole org)
+  runBenchmarkForVendor(vendor, org).catch(console.error);
 
   return NextResponse.json(vendor, { status: 201 });
 }
