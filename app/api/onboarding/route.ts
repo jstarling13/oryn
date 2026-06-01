@@ -51,52 +51,59 @@ export async function POST(req: NextRequest) {
 
   const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-  const org = await prisma.organization.upsert({
-    where: { clerkUserId: userId },
-    create: {
-      clerkUserId: userId,
-      name: businessName,
-      type: businessType,
-      city,
-      monthlyRevenue,
-      trialEndsAt,
-      onboardingDone: true,
-    },
-    update: {
-      name: businessName,
-      type: businessType,
-      city,
-      monthlyRevenue,
-      trialEndsAt,
-      onboardingDone: true,
-    },
-  });
-
   // Core plan allows up to 10 vendors; onboarding starts on CORE
   const vendorList = (vendors ?? []).slice(0, 10);
 
-  if (vendorList.length) {
-    await prisma.vendor.createMany({
-      data: vendorList.map((v: {
-        name: string;
-        category: string;
-        monthlyAmount: number;
-        contractEndDate?: string | null;
-        notes?: string | null;
-        contactEmail?: string | null;
-        contactName?: string | null;
-      }) => ({
-        orgId: org.id,
-        name: v.name,
-        category: v.category,
-        monthlyAmount: v.monthlyAmount,
-        contractEndDate: v.contractEndDate ? new Date(v.contractEndDate) : null,
-        notes: v.notes ?? null,
-        contactEmail: v.contactEmail ?? null,
-        contactName: v.contactName ?? null,
-      })),
+  type VendorInput = {
+    name: string;
+    category: string;
+    monthlyAmount: number;
+    contractEndDate?: string | null;
+    notes?: string | null;
+    contactEmail?: string | null;
+    contactName?: string | null;
+  };
+
+  // Atomic: if vendor creation fails the org is NOT persisted (user can retry)
+  const org = await prisma.$transaction(async (tx) => {
+    const created = await tx.organization.upsert({
+      where: { clerkUserId: userId },
+      create: {
+        clerkUserId: userId,
+        name: businessName,
+        type: businessType,
+        city,
+        monthlyRevenue,
+        trialEndsAt,
+        onboardingDone: true,
+      },
+      update: {
+        name: businessName,
+        type: businessType,
+        city,
+        monthlyRevenue,
+        trialEndsAt,
+        onboardingDone: true,
+      },
     });
-  }
+
+    if (vendorList.length) {
+      await tx.vendor.createMany({
+        data: vendorList.map((v: VendorInput) => ({
+          orgId: created.id,
+          name: v.name,
+          category: v.category,
+          monthlyAmount: v.monthlyAmount,
+          contractEndDate: v.contractEndDate ? new Date(v.contractEndDate) : null,
+          notes: v.notes ?? null,
+          contactEmail: v.contactEmail ?? null,
+          contactName: v.contactName ?? null,
+        })),
+      });
+    }
+
+    return created;
+  });
 
   const vendorCount = vendorList.length;
 
