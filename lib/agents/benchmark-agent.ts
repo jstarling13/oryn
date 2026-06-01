@@ -18,27 +18,40 @@ export async function runBenchmarkForVendor(
     data: { vendorId: vendor.id, orgId: org.id, classification: "BENCHMARKING" },
   });
 
-  const result = await runBenchmarkResearch(
-    vendor.name,
-    vendor.category,
-    org.city,
-    vendor.monthlyAmount,
-    org.type
-  );
+  try {
+    const result = await runBenchmarkResearch(
+      vendor.name,
+      vendor.category,
+      org.city,
+      vendor.monthlyAmount,
+      org.type
+    );
 
-  return prisma.vendorBenchmark.create({
-    data: {
-      vendorId: vendor.id,
-      orgId: org.id,
-      marketRateLow: result.marketRateLow,
-      marketRateHigh: result.marketRateHigh,
-      marketRateTypical: result.marketRateTypical,
-      confidence: result.confidence,
-      sourcesSummary: result.sourcesSummary,
-      classification: result.classification,
-      rawResearch: result.rawResearch,
-    },
-  });
+    return await prisma.vendorBenchmark.create({
+      data: {
+        vendorId: vendor.id,
+        orgId: org.id,
+        marketRateLow: result.marketRateLow,
+        marketRateHigh: result.marketRateHigh,
+        marketRateTypical: result.marketRateTypical,
+        confidence: result.confidence,
+        sourcesSummary: result.sourcesSummary,
+        classification: result.classification,
+        rawResearch: result.rawResearch,
+      },
+    });
+  } catch (err) {
+    // Write an UNKNOWN record so the UI doesn't get stuck on "Benchmarking…"
+    console.error(`Benchmark research failed for vendor ${vendor.id}:`, err);
+    return prisma.vendorBenchmark.create({
+      data: {
+        vendorId: vendor.id,
+        orgId: org.id,
+        classification: "UNKNOWN",
+        sourcesSummary: "Research failed — you can re-run from the dashboard.",
+      },
+    });
+  }
 }
 
 export async function runBenchmarksForOrg(orgId: string) {

@@ -39,10 +39,13 @@ export async function POST(req: NextRequest) {
   }
   const bodyText = lines.slice(bodyStart).join("\n").trim();
 
-  // Convert plain text to simple HTML paragraphs
+  // Escape HTML special chars before converting plain text to paragraphs
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
   const bodyHtml = bodyText
     .split(/\n\n+/)
-    .map((p) => `<p style="margin:0 0 16px;line-height:1.6;">${p.replace(/\n/g, "<br/>")}</p>`)
+    .map((p) => `<p style="margin:0 0 16px;line-height:1.6;">${escapeHtml(p).replace(/\n/g, "<br/>")}</p>`)
     .join("");
 
   const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;max-width:560px;margin:0 auto;padding:40px 24px;">
