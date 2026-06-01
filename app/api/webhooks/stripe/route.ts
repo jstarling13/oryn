@@ -50,6 +50,10 @@ export async function POST(req: NextRequest) {
             stripeSubId: sub.id,
             stripeCustomerId:
               typeof sub.customer === "string" ? sub.customer : sub.customer.id,
+            // Sync trial end date so the dashboard banner matches Stripe's reality
+            ...(sub.trial_end
+              ? { trialEndsAt: new Date(sub.trial_end * 1000) }
+              : {}),
           },
         });
         break;
