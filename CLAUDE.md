@@ -47,3 +47,7 @@ npm run dev                  # start dev server
 ## Cron secrets
 All cron routes require `Authorization: Bearer $CRON_SECRET` header.
 Admin routes require the caller's Clerk email to be in `ADMIN_EMAILS` env var.
+
+<!-- stripe-projects-cli managed:claude-md:start -->
+look at AGENTS.md for your rules
+<!-- stripe-projects-cli managed:claude-md:end -->
