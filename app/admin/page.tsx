@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AdminTriggerButton } from "./AdminTriggerButton";
@@ -22,6 +24,14 @@ async function getAdminData() {
 }
 
 export default async function AdminPage() {
+  // Server-side admin guard — doesn't rely on JWT template having email
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
+  const user = await currentUser();
+  const email = user?.emailAddresses[0]?.emailAddress ?? "";
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
+  if (!adminEmails.includes(email)) redirect("/dashboard");
+
   const { orgs, mrr } = await getAdminData();
 
   const totalSavingsRealized = orgs.reduce((sum, o) => {
