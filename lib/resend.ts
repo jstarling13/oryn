@@ -3,7 +3,10 @@ import { Resend } from "resend";
 // Gracefully degrade if RESEND_API_KEY is not set (dev / test environments)
 export const resend = new Resend(process.env.RESEND_API_KEY ?? "re_missing_key");
 
-export const FROM_EMAIL = "Oryn <notifications@oryn.ai>";
+// Resend requires a verified domain. Until oryn.ai is verified, set
+// RESEND_FROM_EMAIL=onboarding@resend.dev in .env.local for testing.
+export const FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL ?? "Oryn <notifications@oryn.ai>";
 const UNSUBSCRIBE_EMAIL = "unsubscribe@oryn.ai";
 
 /** Shared headers required for CAN-SPAM / GDPR compliance */
