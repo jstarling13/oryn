@@ -57,3 +57,10 @@ prisma/generated/
 # Sensitive files — never commit
 API Keys.txt
 *.keys.txt
+
+# IDE / AI tool directories
+.claude/
+.cursor/
+.cursorignore
+.agents/
+.idea/
