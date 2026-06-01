@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   formatCurrency,
@@ -677,8 +678,11 @@ function CSVImportModal({ onClose, onImported }: { onClose: () => void; onImport
 
 export default function DashboardPage() {
   const { isLoaded } = useAuth();
+  const searchParams = useSearchParams();
+  const checkoutSuccess = searchParams?.get("checkout") === "success";
   const [org, setOrg] = useState<OrgData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCheckoutBanner, setShowCheckoutBanner] = useState(checkoutSuccess);
   const [activeTab, setActiveTab] = useState<"vendors" | "negotiations">("vendors");
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [showCSVImport, setShowCSVImport] = useState(false);
@@ -804,6 +808,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </nav>
+
+      {/* Checkout success banner */}
+      {showCheckoutBanner && (
+        <div className="bg-green-600 text-white text-sm text-center py-3 px-4 flex items-center justify-center gap-3">
+          <span>🎉 You&apos;re subscribed! Your plan is now active.</span>
+          <button onClick={() => setShowCheckoutBanner(false)} className="text-green-200 hover:text-white text-lg leading-none">×</button>
+        </div>
+      )}
 
       {/* Trial banner — always visible during trial */}
       {showTrialBanner && (
