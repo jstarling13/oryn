@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runContractAlerts } from "@/lib/agents/contract-alert-agent";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,3 +15,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
+
+export { handler as GET, handler as POST };

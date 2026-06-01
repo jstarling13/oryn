@@ -4,7 +4,7 @@ import { sendTrialNudge } from "@/lib/resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { estimateAnnualSavings } from "@/lib/utils";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,3 +62,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ nudgesSent: sent.length, details: sent });
 }
+
+export { handler as GET, handler as POST };

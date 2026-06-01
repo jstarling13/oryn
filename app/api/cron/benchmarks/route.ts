@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runBenchmarksForAll } from "@/lib/agents/benchmark-agent";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   // Verify Railway/cron secret
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -16,3 +16,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
+
+export { handler as GET, handler as POST };

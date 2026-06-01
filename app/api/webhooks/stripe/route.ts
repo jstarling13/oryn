@@ -28,8 +28,11 @@ export async function POST(req: NextRequest) {
         if (!orgId) break;
 
         const priceId = sub.items.data[0]?.price.id;
-        const plan =
-          priceId === process.env.STRIPE_PRO_PRICE_ID ? "PRO" : "CORE";
+        const proPriceIds = [
+          process.env.STRIPE_PRO_PRICE_ID,
+          process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+        ].filter(Boolean);
+        const plan = proPriceIds.includes(priceId) ? "PRO" : "CORE";
         const status =
           sub.status === "active"
             ? "ACTIVE"
