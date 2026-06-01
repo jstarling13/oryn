@@ -461,6 +461,7 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
   const [body, setBody] = useState(draft.emailBody);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [wonAmount, setWonAmount] = useState("");
   const [showWonForm, setShowWonForm] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -483,14 +484,21 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
   const sendDirect = async () => {
     if (!vendor?.contactEmail) return;
     setSending(true);
+    setSendError("");
     try {
       const res = await fetch("/api/negotiations/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draftId: draft.id, emailBody: body }),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Send failed" }));
+        setSendError(err.error ?? "Send failed");
+        return;
+      }
       setSentDirect(true); onUpdate();
+    } catch {
+      setSendError("Network error — check your connection and try again.");
     } finally { setSending(false); }
   };
 
@@ -528,6 +536,11 @@ function NegotiationModal({ draft, vendor, onClose, onUpdate }: {
             <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
               <span className="text-green-600">●</span>
               Will send to: <strong className="text-gray-700">{vendor.contactName ? `${vendor.contactName} <${vendor.contactEmail}>` : vendor.contactEmail}</strong>
+            </div>
+          )}
+          {sendError && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+              ⚠ {sendError}
             </div>
           )}
           {showWonForm && (
@@ -687,10 +700,16 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId: vendor.id }),
       });
+      if (!res.ok) {
+        console.error("Failed to create negotiation draft:", await res.text());
+        return;
+      }
       const draft = await res.json();
       await fetchOrg();
       setActiveDraft({ ...draft, vendor: { name: vendor.name } });
       setActiveDraftVendor(vendor);
+    } catch (err) {
+      console.error("Draft email error:", err);
     } finally { setDraftingFor(null); }
   };
 
