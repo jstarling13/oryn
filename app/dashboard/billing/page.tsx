@@ -158,9 +158,14 @@ export default function BillingPage() {
           </div>
         )}
 
-        {/* Plan cards — only show upgrade options */}
+        {/* Plan cards — show all for trial/canceled; active users only see upgrades */}
         <div className="grid gap-6 mb-8">
-          {PLANS.filter((p) => !isActive || p.plan !== org?.plan).map((p) => {
+          {PLANS.filter((p) => {
+            if (!isActive) return true; // show all during trial / canceled
+            // Active: only show plans that are a genuine upgrade (PRO > CORE)
+            const rank: Record<string, number> = { CORE: 1, PRO: 2 };
+            return (rank[p.plan] ?? 0) > (rank[org?.plan ?? ""] ?? 0);
+          }).map((p) => {
             const displayPrice = annual ? Math.round(p.monthly * 0.8) : p.monthly;
             const annualTotal = annual ? displayPrice * 12 : null;
             return (
