@@ -53,3 +53,7 @@ prisma/generated/
 .env
 .env.*
 !.env.example
+
+# Sensitive files — never commit
+API Keys.txt
+*.keys.txt

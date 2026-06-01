@@ -15,6 +15,21 @@ export const metadata: Metadata = {
     description:
       "AI-powered vendor cost optimization for restaurants, contractors, and retail shops.",
     siteName: "Oryn",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Oryn",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Oryn — Stop paying more than you should.",
+    description:
+      "AI-powered vendor cost optimization for restaurants, contractors, and retail shops.",
+    images: ["/logo.png"],
   },
 };
 
