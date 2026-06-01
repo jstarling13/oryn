@@ -30,7 +30,10 @@ export async function POST(req: NextRequest) {
   const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 1500,
-    system: `You are a financial analyst parsing bank statement CSV data to identify recurring vendor payments for a small business.
+    system: [
+      {
+        type: "text",
+        text: `You are a financial analyst parsing bank statement CSV data to identify recurring vendor payments for a small business.
 Look for recurring charges that appear to be business vendors (suppliers, services, software, utilities, etc.).
 Group duplicate merchant names and calculate a monthly average.
 Return ONLY a JSON array — no explanation, no markdown. Example:
@@ -45,6 +48,9 @@ Rules:
 - Normalize merchant names (remove transaction IDs, location codes)
 - monthlyAmount should be a monthly average rounded to nearest dollar
 - Return at most 20 vendors`,
+        cache_control: { type: "ephemeral" },
+      },
+    ] as Anthropic.Messages.TextBlockParam[],
     messages: [
       {
         role: "user",
