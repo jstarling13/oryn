@@ -72,9 +72,12 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  if (vendors?.length) {
+  // Core plan allows up to 10 vendors; onboarding starts on CORE
+  const vendorList = (vendors ?? []).slice(0, 10);
+
+  if (vendorList.length) {
     await prisma.vendor.createMany({
-      data: vendors.map((v: {
+      data: vendorList.map((v: {
         name: string;
         category: string;
         monthlyAmount: number;
@@ -95,7 +98,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const vendorCount = vendors?.length ?? 0;
+  const vendorCount = vendorList.length;
 
   // Fire welcome email and benchmarks in background
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://oryn.ai";

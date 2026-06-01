@@ -53,48 +53,7 @@ export async function runBenchmarksForOrg(orgId: string) {
 
   for (const vendor of org.vendors) {
     try {
-      await prisma.vendorBenchmark.upsert({
-        where: {
-          id: (
-            await prisma.vendorBenchmark.findFirst({
-              where: { vendorId: vendor.id },
-              orderBy: { benchmarkedAt: "desc" },
-            })
-          )?.id ?? "nonexistent",
-        },
-        create: {
-          vendorId: vendor.id,
-          orgId: org.id,
-          classification: "BENCHMARKING",
-        },
-        update: {
-          classification: "BENCHMARKING",
-          benchmarkedAt: new Date(),
-        },
-      });
-
-      const result = await runBenchmarkResearch(
-        vendor.name,
-        vendor.category,
-        org.city,
-        vendor.monthlyAmount,
-        org.type
-      );
-
-      const benchmark = await prisma.vendorBenchmark.create({
-        data: {
-          vendorId: vendor.id,
-          orgId: org.id,
-          marketRateLow: result.marketRateLow,
-          marketRateHigh: result.marketRateHigh,
-          marketRateTypical: result.marketRateTypical,
-          confidence: result.confidence,
-          sourcesSummary: result.sourcesSummary,
-          classification: result.classification,
-          rawResearch: result.rawResearch,
-        },
-      });
-
+      const benchmark = await runBenchmarkForVendor(vendor, org);
       results.push({ vendor, benchmark, success: true });
     } catch (err) {
       console.error(`Benchmark failed for vendor ${vendor.id}:`, err);
